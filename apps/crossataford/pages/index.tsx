@@ -17,7 +17,7 @@ export function Index() {
         crossataford
       </h2>
       <Button>
-        Clickable
+        CLICK CLICK
       </Button>
     </div>
   );
