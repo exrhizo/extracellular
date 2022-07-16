@@ -3,6 +3,7 @@
   "version": 2,
   "projects": {
     "crossataford": "apps/crossataford",
-    "crossataford-e2e": "apps/crossataford-e2e"
+    "crossataford-e2e": "apps/crossataford-e2e",
+    "data-access-roam": "libs/data-access-roam"
   }
 }
