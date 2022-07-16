@@ -1,17 +1,17 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/exrhizo-e2e/src",
+  "sourceRoot": "apps/crossataford-e2e/src",
   "projectType": "application",
   "targets": {
     "e2e": {
       "executor": "@nrwl/cypress:cypress",
       "options": {
-        "cypressConfig": "apps/exrhizo-e2e/cypress.json",
-        "devServerTarget": "exrhizo:serve:development"
+        "cypressConfig": "apps/crossataford-e2e/cypress.json",
+        "devServerTarget": "crossataford:serve:development"
       },
       "configurations": {
         "production": {
-          "devServerTarget": "exrhizo:serve:production"
+          "devServerTarget": "crossataford:serve:production"
         }
       }
     },
@@ -19,10 +19,10 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/exrhizo-e2e/**/*.{js,ts}"]
+        "lintFilePatterns": ["apps/crossataford-e2e/**/*.{js,ts}"]
       }
     }
   },
   "tags": [],
-  "implicitDependencies": ["exrhizo"]
+  "implicitDependencies": ["crossataford"]
 }

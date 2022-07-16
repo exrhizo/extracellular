@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/exrhizo",
+  "sourceRoot": "apps/crossataford",
   "projectType": "application",
   "targets": {
     "build": {
@@ -8,8 +8,8 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "root": "apps/exrhizo",
-        "outputPath": "dist/apps/exrhizo"
+        "root": "apps/crossataford",
+        "outputPath": "dist/apps/crossataford"
       },
       "configurations": {
         "development": {},
@@ -20,16 +20,16 @@
       "executor": "@nrwl/next:server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "exrhizo:build",
+        "buildTarget": "crossataford:build",
         "dev": true
       },
       "configurations": {
         "development": {
-          "buildTarget": "exrhizo:build:development",
+          "buildTarget": "crossataford:build:development",
           "dev": true
         },
         "production": {
-          "buildTarget": "exrhizo:build:production",
+          "buildTarget": "crossataford:build:production",
           "dev": false
         }
       }
@@ -37,14 +37,14 @@
     "export": {
       "executor": "@nrwl/next:export",
       "options": {
-        "buildTarget": "exrhizo:build:production"
+        "buildTarget": "crossataford:build:production"
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/exrhizo"],
+      "outputs": ["coverage/apps/crossataford"],
       "options": {
-        "jestConfig": "apps/exrhizo/jest.config.ts",
+        "jestConfig": "apps/crossataford/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -52,7 +52,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/exrhizo/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["apps/crossataford/**/*.{ts,tsx,js,jsx}"]
       }
     }
   },

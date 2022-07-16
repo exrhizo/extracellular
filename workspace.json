@@ -2,7 +2,7 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
-    "exrhizo": "apps/exrhizo",
-    "exrhizo-e2e": "apps/exrhizo-e2e"
+    "crossataford": "apps/crossataford",
+    "crossataford-e2e": "apps/crossataford-e2e"
   }
 }
