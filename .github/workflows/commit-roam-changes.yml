@@ -1,0 +1,22 @@
+name: publish-roam-changes
+on:
+  repository_dispatch:
+    types: roam-change
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      ROAM_CONTENT: ${{ github.event.client_payload.content }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Write content from event
+        run: |
+          echo "$ROAM_CONTENT" > ./libs/data-access-roam/src/lib/roam-graph.json
+          git diff
+      - name: Publish
+        run: |
+          git config user.email "exrhizo@gmail.com"
+          git config user.name "Alex Action"
+          git add .
+          git commit -m "Automatically published roam graph update. $(date +'%s %Y/%m/%d')"
+          git push origin main
