@@ -37,3 +37,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Don't publish the roam exports
+libs/data-access-roam/src/*.json

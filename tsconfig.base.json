@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@ecm/data-access-roam": ["libs/data-access-roam/src/index.ts"]
+      "@ecm/data-access-roam": ["libs/data-access-roam/src/index.ts"],
+      "@ecm/roam-wrangler": ["libs/roam-wrangler/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -38,3 +38,33 @@ Run `nx e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cy
 Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
 
 Run `nx graph` to see a diagram of the dependencies of your projects.
+
+```javascript
+// https://davidbieber.com/snippets/2020-12-28-publishing-blog-posts-from-roam-research-quickly-and-automatically/
+// https://github.com/dbieber/davidbieber.com/blob/master/.github/scripts/publish.py
+
+// https://www.radix-ui.com/docs/primitives/overview/getting-started
+// https://stitches.dev/docs/tutorials
+// https://nx.dev/executors/creating-custom-builders
+
+function publishSnippetRaw(uid, title, date, content) {
+  const data = {
+    event_type: 'snippet-update',
+    client_payload: {
+      uid: uid,
+      title: title,
+      date: date,
+      content: content,
+    },
+  };
+  fetch('https://api.github.com/repos/dbieber/davidbieber.com/dispatches', {
+    headers: {
+      Accept: 'application/vnd.github.everest-preview+json',
+      Authorization: 'token PERSONAL_AUTHENTICATION_TOKEN',
+    },
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+const publishSnippet = debounce(publishSnippetRaw, 15000, true);
+```

@@ -1,0 +1,9 @@
+{
+    "executors": {
+        "roam-capture": {
+            "implementation": "./impl",
+            "schema": "./schema.json",
+            "description": "Captures POST request locally from Alex's roam exporter."
+        }
+    }
+}

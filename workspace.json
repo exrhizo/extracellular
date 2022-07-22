@@ -4,6 +4,7 @@
   "projects": {
     "crossataford": "apps/crossataford",
     "crossataford-e2e": "apps/crossataford-e2e",
-    "data-access-roam": "libs/data-access-roam"
+    "data-access-roam": "libs/data-access-roam",
+    "roam-wrangler": "libs/roam-wrangler"
   }
 }

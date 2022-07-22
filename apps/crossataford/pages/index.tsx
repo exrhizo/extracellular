@@ -13,12 +13,8 @@ const Button = styled('button', {
 export function Index() {
   return (
     <div>
-      <h2>
-        crossataford
-      </h2>
-      <Button>
-        CLICK CLICK
-      </Button>
+      <h2>crossataford</h2>
+      <Button>CLICK CLICK</Button>
     </div>
   );
 }
