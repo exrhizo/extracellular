@@ -17,6 +17,14 @@
         "jestConfig": "libs/data-access-roam/jest.config.ts",
         "passWithNoTests": true
       }
+    },
+    "capture": {
+      "executor": "./tools/executors/roam-capture:roam-capture",
+      "options": {
+        "port": 8010,
+        "output": "libs/data-access-roam/src/roam.json",
+        "outputRaw": "libs/data-access-roam/src/roam-raw.json"
+      }
     }
   },
   "tags": []
