@@ -4,7 +4,7 @@ import iti from 'itiriri';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { readFileSync, writeFileSync, readFile } from 'fs';
 import { join } from 'path';
-import { roamWrangler } from '@ecm/roam-wrangler';
+import { roamWrangler } from '../../../libs/roam-wrangler/src';
 
 // TODO:
 // npm install jq-web
@@ -78,6 +78,7 @@ export default async function echoExecutor(
   const fullRawPath = join(context.cwd, options.outputRaw);
 
   console.log('roamWrangler', roamWrangler);
+  console.log('process.versions', process.versions);
 
   console.log(`Reading file ${fullRawPath}`);
   const rawData = JSON.parse(readFileSync(fullRawPath, 'utf8')) as RawRoamData;
@@ -208,7 +209,7 @@ function processRoamData(data: RawRoamData) {
     })
     .toArray();
 
-  console.log(zexportBlockUids);
+  // console.log(zexportBlockUids);
 
   return {
     pages: zexportPages,

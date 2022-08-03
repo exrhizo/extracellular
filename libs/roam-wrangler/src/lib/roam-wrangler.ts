@@ -1,6 +1,9 @@
-// import parser from 'athens-roam-parser';
-const parser = 'hi ho';
+import parser from 'athens-roam-parser';
 
-export function roamWrangler(): string {
-  return parser;
+interface Athens {
+  parse: (text: string) => Record<string, string>;
+}
+
+export function roamWrangler(): Athens {
+  return parser.athens as Athens;
 }
