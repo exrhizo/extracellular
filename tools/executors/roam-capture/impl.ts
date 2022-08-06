@@ -4,7 +4,7 @@ import iti from 'itiriri';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { readFileSync, writeFileSync, readFile } from 'fs';
 import { join } from 'path';
-import { roamWrangler } from '../../../libs/roam-wrangler/src';
+import { parseToStructure, parseToAst } from '../../../libs/roam-wrangler/src';
 
 // TODO:
 // npm install jq-web
@@ -21,7 +21,7 @@ const example = {
   title: 'thing',
   children: null ?? [
     {
-      string: 'I got a kagle app and have started practicing!!!',
+      string: 'I got a app and have started practicing!!!',
       uid: '5zWBHxKpM',
       heading: null ?? 3,
       'create-time': 1576303943052,
@@ -77,9 +77,6 @@ export default async function echoExecutor(
   const fullPath = join(context.cwd, options.output);
   const fullRawPath = join(context.cwd, options.outputRaw);
 
-  console.log('roamWrangler', roamWrangler);
-  console.log('process.versions', process.versions);
-
   console.log(`Reading file ${fullRawPath}`);
   const rawData = JSON.parse(readFileSync(fullRawPath, 'utf8')) as RawRoamData;
 
@@ -87,8 +84,9 @@ export default async function echoExecutor(
 
   console.log('writing to ', fullPath);
   //   const s = jq.json(processData, '.');
-
-  writeFileSync(fullPath, JSON.stringify(processData, null, 2), { flag: 'w' });
+  writeFileSync(fullPath, JSON.stringify(processData.parsed, null, 2), {
+    flag: 'w',
+  });
 
   return { success: true };
 }
@@ -160,13 +158,16 @@ function processRoamData(data: RawRoamData) {
       uid: b[':block/uid'],
       parents: getParentsUids(b[':block/parents']),
       content: b[':block/string'],
-      // markdownTree: md.parse(b[':block/string'], {}),
+      // toParse: console.log('parsing:', b[':block/string']),
+      structure: parseToStructure(b[':block/string']),
+      ast: parseToAst(b[':block/string']),
       heading: b[':block/heading'],
       order: b[':block/order'],
       pageUid: pageByDbId.get(b[':block/page'][':db/id'])![':block/uid'],
       pageTitle: pageByDbId.get(b[':block/page'][':db/id'])![':node/title'],
     }))
     .toMap((block) => block.uid);
+  console.log('DONE PARSING');
 
   const pages = iti(data.pages)
     .map((p) => ({
@@ -198,10 +199,10 @@ function processRoamData(data: RawRoamData) {
   const zexportPages = iti(zexportPagesUids)
     .map((p) => {
       const page = pages.get(p)!;
-      console.log(
-        page,
-        page.children.filter((c) => zexportBlockUids.has(c))
-      );
+      // console.log(
+      //   page,
+      //   page.children.filter((c) => zexportBlockUids.has(c))
+      // );
       return {
         ...page,
         children: page.children.filter((c) => zexportBlockUids.has(c)),
@@ -211,9 +212,23 @@ function processRoamData(data: RawRoamData) {
 
   // console.log(zexportBlockUids);
 
+  const bs = iti(zexportBlocks)
+    // .take(10)
+    .map((x) => ({
+      uid: x.uid,
+      pageTitle: x.pageTitle,
+      content: x.content,
+      structure: x.structure,
+      ast: x.ast,
+    }))
+    .toArray();
+
+  // console.dir(bs, { depth: null });
+
   return {
     pages: zexportPages,
     blocks: zexportBlocks,
+    parsed: bs,
   };
 }
 

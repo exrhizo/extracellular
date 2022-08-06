@@ -60,7 +60,7 @@ var itiriri_1 = require("itiriri");
 var http_1 = require("http");
 var fs_1 = require("fs");
 var path_1 = require("path");
-var roam_wrangler_1 = require("@ecm/roam-wrangler");
+var src_1 = require("../../../libs/roam-wrangler/src");
 // TODO:
 // npm install jq-web
 // const jq = require('jq-web');
@@ -74,7 +74,7 @@ var example = {
     title: 'thing',
     children: null !== null && null !== void 0 ? null : [
         {
-            string: 'I got a kagle app and have started practicing!!!',
+            string: 'I got a app and have started practicing!!!',
             uid: '5zWBHxKpM',
             heading: null !== null && null !== void 0 ? null : 3,
             'create-time': 1576303943052,
@@ -88,13 +88,14 @@ function echoExecutor(options, context) {
         return __generator(this, function (_a) {
             fullPath = (0, path_1.join)(context.cwd, options.output);
             fullRawPath = (0, path_1.join)(context.cwd, options.outputRaw);
-            console.log('roamWrangler', roam_wrangler_1.roamWrangler);
             console.log("Reading file ".concat(fullRawPath));
             rawData = JSON.parse((0, fs_1.readFileSync)(fullRawPath, 'utf8'));
             processData = processRoamData(rawData);
             console.log('writing to ', fullPath);
             //   const s = jq.json(processData, '.');
-            (0, fs_1.writeFileSync)(fullPath, JSON.stringify(processData, null, 2), { flag: 'w' });
+            (0, fs_1.writeFileSync)(fullPath, JSON.stringify(processData.parsed, null, 2), {
+                flag: 'w'
+            });
             return [2 /*return*/, { success: true }];
         });
     });
@@ -172,13 +173,16 @@ function processRoamData(data) {
         uid: b[':block/uid'],
         parents: getParentsUids(b[':block/parents']),
         content: b[':block/string'],
-        // markdownTree: md.parse(b[':block/string'], {}),
+        // toParse: console.log('parsing:', b[':block/string']),
+        structure: (0, src_1.parseToStructure)(b[':block/string']),
+        ast: (0, src_1.parseToAst)(b[':block/string']),
         heading: b[':block/heading'],
         order: b[':block/order'],
         pageUid: pageByDbId.get(b[':block/page'][':db/id'])[':block/uid'],
         pageTitle: pageByDbId.get(b[':block/page'][':db/id'])[':node/title']
     }); })
         .toMap(function (block) { return block.uid; });
+    console.log('DONE PARSING');
     var pages = (0, itiriri_1["default"])(data.pages)
         .map(function (p) {
         var _a;
@@ -205,14 +209,29 @@ function processRoamData(data) {
     var zexportPages = (0, itiriri_1["default"])(zexportPagesUids)
         .map(function (p) {
         var page = pages.get(p);
-        console.log(page, page.children.filter(function (c) { return zexportBlockUids.has(c); }));
+        // console.log(
+        //   page,
+        //   page.children.filter((c) => zexportBlockUids.has(c))
+        // );
         return __assign(__assign({}, page), { children: page.children.filter(function (c) { return zexportBlockUids.has(c); }) });
     })
         .toArray();
-    console.log(zexportBlockUids);
+    // console.log(zexportBlockUids);
+    var bs = (0, itiriri_1["default"])(zexportBlocks)
+        // .take(10)
+        .map(function (x) { return ({
+        uid: x.uid,
+        pageTitle: x.pageTitle,
+        content: x.content,
+        structure: x.structure,
+        ast: x.ast
+    }); })
+        .toArray();
+    // console.dir(bs, { depth: null });
     return {
         pages: zexportPages,
-        blocks: zexportBlocks
+        blocks: zexportBlocks,
+        parsed: bs
     };
 }
 function captureRoamData(output, data) { }
