@@ -1,15 +1,26 @@
-# Extracellular
+# Extracellular Monorepo
 
-Multiple web pages launched from this repository.
+# [Cross at a Ford](http://crossataford.com) founded by @exrhizo
 
-## [Cross at a Ford](http://crossataford.com)
+Run with
 
-Contracting firm founded by @exrhizo
+- `nx serve crossataford`
+
+# Pipe My DAO
+
+Run with
+
+- `nx serve pipemydao`
+
+Created with
+
+- `nx g @nrwl/next:app pipemydao`
+- `nx g @nrwl/next:page my-new-page --project=my-new-app`
+- `nx g @nrwl/next:component my-new-component --project=my-new-app`
+- [Nx Next Tutorial](https://nx.dev/packages/next)
+- [Nx vercel deploy tutorial](https://nx.dev/recipes/other/deploy-nextjs-to-vercel)
 
 ## Commands
-
-- vercel build `nx build crossataford --pord`
-- vercel
 
 ### NX
 

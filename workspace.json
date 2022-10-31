@@ -5,6 +5,7 @@
     "crossataford": "apps/crossataford",
     "crossataford-e2e": "apps/crossataford-e2e",
     "data-access-roam": "libs/data-access-roam",
+    "pipemydao": "apps/pipemydao",
     "roam-wrangler": "libs/roam-wrangler"
   }
 }

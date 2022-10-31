@@ -20,14 +20,6 @@
       }
     }
   },
-  "targetDependencies": {
-    "build": [
-      {
-        "target": "build",
-        "projects": "dependencies"
-      }
-    ]
-  },
   "generators": {
     "@nrwl/react": {
       "application": {
@@ -36,10 +28,15 @@
     },
     "@nrwl/next": {
       "application": {
-        "style": "@emotion/styled",
+        "style": "css",
         "linter": "eslint"
       }
     }
   },
-  "defaultProject": "crossataford"
+  "defaultProject": "pipemydao",
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"]
+    }
+  }
 }

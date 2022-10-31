@@ -1,7 +1,7 @@
 import { styled } from '../theme/stitches.config';
 
 const Button = styled('button', {
-  backgroundColor: 'red',
+  backgroundColor: 'medium',
   borderRadius: '9999px',
   fontSize: '13px',
   padding: '10px 15px',
@@ -13,8 +13,8 @@ const Button = styled('button', {
 export function Index() {
   return (
     <div>
-      <h2>crossataford</h2>
-      <Button>CLICK CLICK</Button>
+      <h2>Pipe My DAO</h2>
+      <Button>Use the pipe</Button>
     </div>
   );
 }
