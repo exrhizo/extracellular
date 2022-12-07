@@ -10,8 +10,8 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 exports.__esModule = true;
-__exportStar(require("./lib/data-access-roam"), exports);
+exports.parseToStructure = exports.parseToAst = void 0;
+var athens_roam_parser_1 = require("athens-roam-parser");
+__createBinding(exports, athens_roam_parser_1, "parseToAst");
+__createBinding(exports, athens_roam_parser_1, "parseToStructure");

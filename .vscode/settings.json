@@ -1,41 +1,48 @@
 {
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": false
+  },
   "[typescript]": {
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll": true
+      "source.fixAll": false
+    }
+  },
+  "[javascript]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": false
     }
   },
   "[typescriptreact]": {
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll": true
+      "source.fixAll": false
     }
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
   "eslint.alwaysShowStatus": true,
-  "peacock.color": "#2f3620",
   "workbench.colorCustomizations": {
-    "activityBar.activeBackground": "#4b5633",
-    "activityBar.background": "#4b5633",
+    "activityBar.activeBackground": "#806180",
+    "activityBar.background": "#806180",
     "activityBar.foreground": "#e7e7e7",
     "activityBar.inactiveForeground": "#e7e7e799",
-    "activityBarBadge.background": "#182328",
-    "activityBarBadge.foreground": "#e7e7e7",
+    "activityBarBadge.background": "#a7a738",
+    "activityBarBadge.foreground": "#15202b",
     "commandCenter.border": "#e7e7e799",
-    "sash.hoverBorder": "#4b5633",
-    "statusBar.background": "#2f3620",
+    "sash.hoverBorder": "#806180",
+    "statusBar.background": "#634b63",
     "statusBar.foreground": "#e7e7e7",
-    "statusBarItem.hoverBackground": "#4b5633",
-    "statusBarItem.remoteBackground": "#2f3620",
+    "statusBarItem.hoverBackground": "#806180",
+    "statusBarItem.remoteBackground": "#634b63",
     "statusBarItem.remoteForeground": "#e7e7e7",
-    "titleBar.activeBackground": "#2f3620",
+    "titleBar.activeBackground": "#634b63",
     "titleBar.activeForeground": "#e7e7e7",
-    "titleBar.inactiveBackground": "#2f362099",
+    "titleBar.inactiveBackground": "#634b6399",
     "titleBar.inactiveForeground": "#e7e7e799"
-  }
+  },
+  "peacock.color": "#634b63"
 }

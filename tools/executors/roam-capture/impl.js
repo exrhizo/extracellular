@@ -46,6 +46,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -64,10 +75,6 @@ var src_1 = require("../../../libs/roam-wrangler/src");
 // TODO:
 // npm install jq-web
 // const jq = require('jq-web');
-// GOAL:
-// First get one level closer to the standard JSON
-// that means nested children
-//
 var example = {
     uid: '',
     'edit-time': 888,
@@ -82,31 +89,55 @@ var example = {
         },
     ]
 };
-function echoExecutor(options, context) {
+function roamCaptureExecutor(_a, context) {
+    var port = _a.port, options = __rest(_a, ["port"]);
     return __awaiter(this, void 0, void 0, function () {
-        var fullPath, fullRawPath, rawData, processData;
-        return __generator(this, function (_a) {
-            fullPath = (0, path_1.join)(context.cwd, options.output);
-            fullRawPath = (0, path_1.join)(context.cwd, options.outputRaw);
-            console.log("Reading file ".concat(fullRawPath));
-            rawData = JSON.parse((0, fs_1.readFileSync)(fullRawPath, 'utf8'));
-            processData = processRoamData(rawData);
-            console.log('writing to ', fullPath);
-            //   const s = jq.json(processData, '.');
-            (0, fs_1.writeFileSync)(fullPath, JSON.stringify(processData.parsed, null, 2), {
-                flag: 'w'
-            });
-            return [2 /*return*/, { success: true }];
+        var outputBase, output, outputRaw, rawData, processData;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    outputBase = (0, path_1.join)(context.cwd, options.output);
+                    output = outputBase + '.json';
+                    outputRaw = outputBase + '-raw.json';
+                    if (!port) return [3 /*break*/, 2];
+                    return [4 /*yield*/, runZexportCaputureServer({ outputRaw: outputRaw, output: output, port: port })];
+                case 1:
+                    _b.sent();
+                    return [3 /*break*/, 3];
+                case 2:
+                    console.log("Reading file ".concat(outputRaw));
+                    rawData = JSON.parse((0, fs_1.readFileSync)(outputRaw, 'utf8'));
+                    processData = processRoamData(rawData, options.unfiltered);
+                    console.log('writing to ', output);
+                    //   const s = jq.json(processData, '.');
+                    (0, fs_1.writeFileSync)(output, JSON.stringify(processData, null, 2), {
+                        flag: 'w'
+                    });
+                    _b.label = 3;
+                case 3: return [2 /*return*/, { success: true }];
+            }
         });
     });
 }
-exports["default"] = echoExecutor;
-function runZexportCaputureServer(output, port) {
+exports["default"] = roamCaptureExecutor;
+function runZexportCaputureServer(_a) {
+    var outputRaw = _a.outputRaw, output = _a.output, port = _a.port;
     return __awaiter(this, void 0, void 0, function () {
+        function captureRoamData(_a) {
+            var outputRaw = _a.outputRaw, output = _a.output, data = _a.data;
+            console.log('writing to ', outputRaw);
+            // const s = jq.json(processData, '.');
+            // const s = JSON.stringify(data, null, 2)
+            (0, fs_1.writeFileSync)(outputRaw, data, { flag: 'w' });
+            var dataObj = JSON.parse(data);
+            var processData = processRoamData(dataObj);
+            console.log('writing to ', output);
+            (0, fs_1.writeFileSync)(output, JSON.stringify(processData, null, 2), { flag: 'w' });
+        }
         var server;
         var _this = this;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     console.log("Starting server on port ".concat(port));
                     server = (0, http_1.createServer)(function (req, resp) { return __awaiter(_this, void 0, void 0, function () {
@@ -118,7 +149,7 @@ function runZexportCaputureServer(output, port) {
                                 data += chunk;
                             });
                             req.on('end', function () {
-                                captureRoamData(output, data);
+                                captureRoamData({ output: output, outputRaw: outputRaw, data: data });
                                 resp.writeHead(200, {
                                     'Content-Type': 'text/plain',
                                     'Access-Control-Allow-Origin': '*',
@@ -138,13 +169,13 @@ function runZexportCaputureServer(output, port) {
                         }
                         console.info("Server is listening on port ".concat(port));
                     });
-                    _a.label = 1;
+                    _b.label = 1;
                 case 1:
                     if (!true) return [3 /*break*/, 3];
                     console.info('Press Ctrl+C to stop');
                     return [4 /*yield*/, stdinQuit()];
                 case 2:
-                    if (_a.sent()) {
+                    if (_b.sent()) {
                         return [3 /*break*/, 3];
                     }
                     return [3 /*break*/, 1];
@@ -153,16 +184,15 @@ function runZexportCaputureServer(output, port) {
         });
     });
 }
-function processRoamData(data) {
+function processRoamData(data, unfiltered) {
+    if (unfiltered === void 0) { unfiltered = false; }
     var blockByDbId = (0, itiriri_1["default"])(data.blocks).toMap(function (b) { return b[':db/id']; });
     var pageByDbId = (0, itiriri_1["default"])(data.pages).toMap(function (p) { return p[':db/id']; });
     var getParentsUids = function (ps) {
         var _a;
         var pageId = ps[0][':db/id'];
         var blocks = ps.slice(1, ps.length).map(function (b) { return b[':db/id']; });
-        return __spreadArray([
-            (_a = pageByDbId.get(pageId)) === null || _a === void 0 ? void 0 : _a[':block/uid']
-        ], blocks.map(function (b) { var _a; return (_a = blockByDbId.get(b)) === null || _a === void 0 ? void 0 : _a[':block/uid']; }), true);
+        return __spreadArray([(_a = pageByDbId.get(pageId)) === null || _a === void 0 ? void 0 : _a[':block/uid']], blocks.map(function (b) { var _a; return (_a = blockByDbId.get(b)) === null || _a === void 0 ? void 0 : _a[':block/uid']; }), true);
     };
     var hasPage = function (b) {
         return pageByDbId.get(b[':block/page'][':db/id']) !== undefined;
@@ -179,7 +209,9 @@ function processRoamData(data) {
         heading: b[':block/heading'],
         order: b[':block/order'],
         pageUid: pageByDbId.get(b[':block/page'][':db/id'])[':block/uid'],
-        pageTitle: pageByDbId.get(b[':block/page'][':db/id'])[':node/title']
+        pageTitle: pageByDbId.get(b[':block/page'][':db/id'])[':node/title'],
+        createTime: b[':create/time'],
+        editTime: b[':edit/time']
     }); })
         .toMap(function (block) { return block.uid; });
     console.log('DONE PARSING');
@@ -193,12 +225,17 @@ function processRoamData(data) {
         });
     })
         .toMap(function (p) { return p.uid; });
-    var zexportTaggedBlocksUids = (0, itiriri_1["default"])(blocks.values())
-        .filter(function (b) { return /^#zexport\b/.test(b.content); })
-        .map(function (b) { return b.uid; })
-        .toSet();
+    var pageTitleToUid = (0, itiriri_1["default"])(data.pages).toMap(function (p) { return p[':node/title']; }, function (p) { return p[':block/uid']; });
+    var filteredBlocksUids = !unfiltered
+        ? (0, itiriri_1["default"])(blocks.values())
+            .filter(function (b) { return /^#zexport\b/.test(b.content); })
+            .map(function (b) { return b.uid; })
+            .toSet()
+        : (0, itiriri_1["default"])(blocks.values())
+            .map(function (b) { return b.uid; })
+            .toSet();
     var zexportBlocks = (0, itiriri_1["default"])(blocks.values())
-        .filter(function (b) { return b.parents.some(function (puid) { return zexportTaggedBlocksUids.has(puid); }); })
+        .filter(function (b) { return b.parents.some(function (puid) { return filteredBlocksUids.has(puid); }); })
         .toArray();
     var zexportBlockUids = (0, itiriri_1["default"])(zexportBlocks)
         .map(function (b) { return b.uid; })
@@ -219,13 +256,20 @@ function processRoamData(data) {
     // console.log(zexportBlockUids);
     var bs = (0, itiriri_1["default"])(zexportBlocks)
         // .take(10)
-        .map(function (x) { return ({
-        uid: x.uid,
-        pageTitle: x.pageTitle,
-        content: x.content,
-        structure: x.structure,
-        ast: x.ast
-    }); })
+        .map(function (x) {
+        var structure = x.structure;
+        return {
+            uid: x.uid,
+            pageTitle: x.pageTitle,
+            content: x.content,
+            links: structureToLinks(structure.slice(1), pageTitleToUid),
+            parents: x.parents,
+            createTime: x.createTime,
+            editTime: x.editTime
+            // structure
+            // ast: x.ast, AST is multilevel
+        };
+    })
         .toArray();
     // console.dir(bs, { depth: null });
     return {
@@ -234,7 +278,6 @@ function processRoamData(data) {
         parsed: bs
     };
 }
-function captureRoamData(output, data) { }
 function stdinQuit() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -251,4 +294,22 @@ function stdinQuit() {
                 })];
         });
     });
+}
+function structureToLinks(atoms, pageTitleToUid) {
+    var _a;
+    return ((_a = atoms === null || atoms === void 0 ? void 0 : atoms.map(function (a) {
+        var _a;
+        switch (a[0]) {
+            case 'text-run':
+                return null;
+            case 'page-link':
+                return pageTitleToUid.get(a[2]);
+            case 'hashtag':
+                return pageTitleToUid.get(a[2]);
+            case 'typed-block-ref':
+                return (_a = a === null || a === void 0 ? void 0 : a[3]) === null || _a === void 0 ? void 0 : _a[2];
+            default:
+                return JSON.stringify(a);
+        }
+    }).filter(function (i) { return Boolean(i); })) !== null && _a !== void 0 ? _a : []);
 }

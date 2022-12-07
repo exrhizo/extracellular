@@ -2,6 +2,6 @@
 exports.__esModule = true;
 exports.dataAccessRoam = void 0;
 function dataAccessRoam() {
-    return 'data-access-roam';
+    return 'ecm-static-data';
 }
 exports.dataAccessRoam = dataAccessRoam;

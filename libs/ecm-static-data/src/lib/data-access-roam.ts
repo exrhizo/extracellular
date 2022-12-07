@@ -1,3 +1,3 @@
 export function dataAccessRoam(): string {
-  return 'data-access-roam';
+  return 'ecm-static-data';
 }

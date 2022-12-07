@@ -1,11 +1,19 @@
 # roam-wrangler
 
-This library was generated with [Nx](https://nx.dev).
+This wraps `athens-roam-parser`
 
-## Running unit tests
+Currently the data massaging functionality is in `ecm-static-data` and it can be rolled into this library, once it is worked out
 
-Run `nx test roam-wrangler` to execute the unit tests via [Jest](https://jestjs.io).
+### Here are the commands to get going:
 
-## Running lint
+- `npm link athens-roam-parser`
+- `npx shadow-cljs watch athens`
 
-Run `nx lint roam-wrangler` to execute the lint via [ESLint](https://eslint.org/).
+- `px tsc --watch tools/executors/roam-capture/impl.ts`
+
+- Go into [zexport in roam](https://roamresearch.com/#/app/collective-intel/page/4F2At-ui4)
+- `nx run ecm-static-data:roam-capture --verbose`
+- Or use the existing `roam-raw.json
+- `nx run ecm-static-data:roam-parse --verbose`
+
+- ^- configured in `libs/ecm-static-data/project.json`

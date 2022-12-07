@@ -10,11 +10,6 @@ import { parseToStructure, parseToAst } from '../../../libs/roam-wrangler/src';
 // npm install jq-web
 // const jq = require('jq-web');
 
-// GOAL:
-// First get one level closer to the standard JSON
-// that means nested children
-//
-
 const example = {
   uid: '',
   'edit-time': 888,
@@ -33,10 +28,10 @@ const example = {
 // Then there is refs and embeds
 // and how to create the ideal data format
 
-export interface EchoExecutorOptions {
-  port: number;
+export interface ExecutorOptions {
+  port?: number;
   output: string;
-  outputRaw: string;
+  unfiltered?: boolean;
 }
 
 interface RawRoamPage {
@@ -70,53 +65,81 @@ interface RawRoamBlock {
 
 type RawRoamData = { pages: RawRoamPage[]; blocks: RawRoamBlock[] };
 
-export default async function echoExecutor(
-  options: EchoExecutorOptions,
+export default async function roamCaptureExecutor(
+  { port, ...options }: ExecutorOptions,
   context: ExecutorContext
 ): Promise<{ success: boolean }> {
-  const fullPath = join(context.cwd, options.output);
-  const fullRawPath = join(context.cwd, options.outputRaw);
+  const outputBase = join(context.cwd, options.output);
+  const output = outputBase + '.json';
+  const outputRaw = outputBase + '-raw.json';
 
-  console.log(`Reading file ${fullRawPath}`);
-  const rawData = JSON.parse(readFileSync(fullRawPath, 'utf8')) as RawRoamData;
+  // const outputRaw = join(context.cwd, options.outputRaw);
+  // const output = join(context.cwd, options.output);
 
-  const processData = processRoamData(rawData);
+  if (port) {
+    await runZexportCaputureServer({ outputRaw, output, port });
+  } else {
+    console.log(`Reading file ${outputRaw}`);
+    const rawData = JSON.parse(readFileSync(outputRaw, 'utf8')) as RawRoamData;
 
-  console.log('writing to ', fullPath);
-  //   const s = jq.json(processData, '.');
-  writeFileSync(fullPath, JSON.stringify(processData.parsed, null, 2), {
-    flag: 'w',
-  });
+    const processData = processRoamData(rawData, options.unfiltered);
+
+    console.log('writing to ', output);
+    //   const s = jq.json(processData, '.');
+    writeFileSync(output, JSON.stringify(processData, null, 2), {
+      flag: 'w',
+    });
+  }
 
   return { success: true };
 }
 
-async function runZexportCaputureServer(output: string, port: number) {
+async function runZexportCaputureServer({
+  outputRaw,
+  output,
+  port,
+}: {
+  outputRaw: string;
+  output: string;
+  port: number;
+}) {
   console.log(`Starting server on port ${port}`);
 
-  const server = createServer(
-    async (req: IncomingMessage, resp: ServerResponse) => {
-      console.log(`Received ${req.method}`);
+  const server = createServer(async (req: IncomingMessage, resp: ServerResponse) => {
+    console.log(`Received ${req.method}`);
 
-      // The for await of looks the best, but I don't know how to get types in typescript.
-      // https://nodejs.dev/learn/get-http-request-body-data-using-nodejs
-      let data = '';
-      req.on('data', (chunk) => {
-        data += chunk;
-      });
+    // The for await of looks the best, but I don't know how to get types in typescript.
+    // https://nodejs.dev/learn/get-http-request-body-data-using-nodejs
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
 
-      req.on('end', () => {
-        captureRoamData(output, data);
-        resp.writeHead(200, {
-          'Content-Type': 'text/plain',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST',
-        });
-        resp.end();
-        console.log('Connection closed');
+    req.on('end', () => {
+      captureRoamData({ output, outputRaw, data });
+      resp.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST',
       });
-    }
-  );
+      resp.end();
+      console.log('Connection closed');
+    });
+  });
+
+  function captureRoamData({ outputRaw, output, data }: { outputRaw: string; output: string; data: string }) {
+    console.log('writing to ', outputRaw);
+    // const s = jq.json(processData, '.');
+    // const s = JSON.stringify(data, null, 2)
+    writeFileSync(outputRaw, data, { flag: 'w' });
+
+    const dataObj = JSON.parse(data) as RawRoamData;
+    const processData = processRoamData(dataObj);
+
+    console.log('writing to ', output);
+
+    writeFileSync(output, JSON.stringify(processData, null, 2), { flag: 'w' });
+  }
 
   // @ts-ignore
   server.listen(port, (err: Error) => {
@@ -135,17 +158,24 @@ async function runZexportCaputureServer(output: string, port: number) {
   }
 }
 
-function processRoamData(data: RawRoamData) {
+type AthensParsedAtom =
+  'paragraph'
+  | ['text-run', string | ['failure', string]]
+  | ['hashtag', { from: string }, string]
+  | ['page-link', { from: string }, string]
+  | ['typed-block-ref', { from: string }, [ 'ref-type', '[[embed]]'], ['block-ref', { from: string }, string]]
+  | ['typed-block-ref', { from: string }, [ 'ref-type', 'embed'], ['block-ref', { from: string }, string]];
+
+type AthensParsedStructure = AthensParsedAtom[];
+
+function processRoamData(data: RawRoamData, unfiltered = false) {
   const blockByDbId = iti(data.blocks).toMap((b) => b[':db/id']);
   const pageByDbId = iti(data.pages).toMap((p) => p[':db/id']);
 
   const getParentsUids = (ps: { ':db/id': number }[]) => {
     const pageId = ps[0][':db/id'];
     const blocks = ps.slice(1, ps.length).map((b) => b[':db/id']);
-    return [
-      pageByDbId.get(pageId)?.[':block/uid']!,
-      ...blocks.map((b) => blockByDbId.get(b)?.[':block/uid']!),
-    ];
+    return [pageByDbId.get(pageId)?.[':block/uid']!, ...blocks.map((b) => blockByDbId.get(b)?.[':block/uid']!)];
   };
 
   const hasPage = (b: RawRoamBlock) => {
@@ -165,6 +195,8 @@ function processRoamData(data: RawRoamData) {
       order: b[':block/order'],
       pageUid: pageByDbId.get(b[':block/page'][':db/id'])![':block/uid'],
       pageTitle: pageByDbId.get(b[':block/page'][':db/id'])![':node/title'],
+      createTime: b[':create/time'],
+      editTime: b[':edit/time']
     }))
     .toMap((block) => block.uid);
   console.log('DONE PARSING');
@@ -173,19 +205,23 @@ function processRoamData(data: RawRoamData) {
     .map((p) => ({
       uid: p[':block/uid'],
       title: p[':node/title'],
-      children: (p[':block/children'] ?? []).map(
-        (c) => blockByDbId.get(c[':db/id'])![':block/uid']
-      ),
+      children: (p[':block/children'] ?? []).map((c) => blockByDbId.get(c[':db/id'])![':block/uid']),
     }))
     .toMap((p) => p.uid);
+  
+  const pageTitleToUid = iti(data.pages).toMap((p) => p[':node/title'], (p) => p[':block/uid']);
 
-  const zexportTaggedBlocksUids = iti(blocks.values())
-    .filter((b) => /^#zexport\b/.test(b.content))
-    .map((b) => b.uid)
-    .toSet();
+  const filteredBlocksUids = !unfiltered
+    ? iti(blocks.values())
+        .filter((b) => /^#zexport\b/.test(b.content))
+        .map((b) => b.uid)
+        .toSet()
+    : iti(blocks.values())
+        .map((b) => b.uid)
+        .toSet();
 
   const zexportBlocks = iti(blocks.values())
-    .filter((b) => b.parents.some((puid) => zexportTaggedBlocksUids.has(puid)))
+    .filter((b) => b.parents.some((puid) => filteredBlocksUids.has(puid)))
     .toArray();
 
   const zexportBlockUids = iti(zexportBlocks)
@@ -214,13 +250,20 @@ function processRoamData(data: RawRoamData) {
 
   const bs = iti(zexportBlocks)
     // .take(10)
-    .map((x) => ({
-      uid: x.uid,
-      pageTitle: x.pageTitle,
-      content: x.content,
-      structure: x.structure,
-      ast: x.ast,
-    }))
+    .map((x) => {
+      const structure = x.structure as AthensParsedStructure;
+      return {
+        uid: x.uid,
+        pageTitle: x.pageTitle,
+        content: x.content,
+        links: structureToLinks(structure.slice(1), pageTitleToUid),
+        parents: x.parents,
+        createTime: x.createTime,
+        editTime: x.editTime
+        // structure
+        // ast: x.ast, AST is multilevel
+      };
+    })
     .toArray();
 
   // console.dir(bs, { depth: null });
@@ -231,8 +274,6 @@ function processRoamData(data: RawRoamData) {
     parsed: bs,
   };
 }
-
-function captureRoamData(output: string, data: string) {}
 
 async function stdinQuit(): Promise<boolean> {
   process.stdin.setRawMode(true);
@@ -246,4 +287,21 @@ async function stdinQuit(): Promise<boolean> {
       resolve(false);
     })
   );
+}
+
+function structureToLinks(atoms: AthensParsedStructure, pageTitleToUid: Map<string, string>) {
+  return (atoms?.map((a) => {
+    switch (a[0]) {
+      case 'text-run':
+        return null;
+      case 'page-link':
+        return pageTitleToUid.get(a[2]);
+      case 'hashtag':
+        return pageTitleToUid.get(a[2]);
+      case 'typed-block-ref':
+        return a?.[3]?.[2];
+      default:
+        return JSON.stringify(a);
+    }
+  }).filter(i => Boolean(i)) ?? []) as string[];
 }

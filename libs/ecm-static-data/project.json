@@ -1,0 +1,43 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ecm-static-data/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/ecm-static-data/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/ecm-static-data"],
+      "options": {
+        "jestConfig": "libs/ecm-static-data/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "roam-capture": {
+      "executor": "./tools/executors/roam-capture:roam-capture",
+      "options": {
+        "port": 8010,
+        "output": "libs/ecm-static-data/src/roam"
+      }
+    },
+    "roam-parse": {
+      "executor": "./tools/executors/roam-capture:roam-capture",
+      "options": {
+        "output": "libs/ecm-static-data/src/roam"
+      }
+    },
+    "roam-parse-all": {
+      "executor": "./tools/executors/roam-capture:roam-capture",
+      "options": {
+        "output": "libs/ecm-static-data/src/roam",
+        "unfiltered": true
+      }
+    }
+  },
+  "tags": []
+}

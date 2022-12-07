@@ -39,4 +39,4 @@ testem.log
 Thumbs.db
 
 # Don't publish the roam exports
-libs/data-access-roam/src/*.json
+libs/ecm-static-data/src/*.json

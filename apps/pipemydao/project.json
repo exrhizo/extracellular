@@ -56,6 +56,12 @@
       "options": {
         "lintFilePatterns": ["apps/pipemydao/**/*.{ts,tsx,js,jsx}"]
       }
+    },
+    "arrow": {
+      "executor": "./tools/executors/arrow:arrow",
+      "options": {
+        "source": "data/balances-small.json"
+      }
     }
   },
   "tags": []

@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Write content from event
         run: |
-          echo "$ROAM_CONTENT" > ./libs/data-access-roam/src/lib/roam-graph.json
+          echo "$ROAM_CONTENT" > ./libs/ecm-static-data/src/lib/roam-graph.json
           git diff
       - name: Publish
         run: |

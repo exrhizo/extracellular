@@ -1,9 +1,9 @@
 {
     "executors": {
-        "roam-capture": {
+        "arrow": {
             "implementation": "./impl",
             "schema": "./schema.json",
-            "description": "Captures POST request locally from Alex's roam exporter."
+            "description": "For experimenting with the load and save apache arrow files."
         }
     }
 }

@@ -1,3 +1,7 @@
+# Placeholder for possible extension
+
+It would likely need to be split into it's own repo
+
 # Required
 
 This will be displayed to users inside of Roam, include any relevant long description for your extension
