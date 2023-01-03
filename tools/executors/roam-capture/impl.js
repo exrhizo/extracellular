@@ -188,31 +188,51 @@ function processRoamData(data, unfiltered) {
     if (unfiltered === void 0) { unfiltered = false; }
     var blockByDbId = (0, itiriri_1["default"])(data.blocks).toMap(function (b) { return b[':db/id']; });
     var pageByDbId = (0, itiriri_1["default"])(data.pages).toMap(function (p) { return p[':db/id']; });
+    var getParents = function (ps) {
+        var pageId = ps[0][':db/id'];
+        var blocks = ps.slice(1, ps.length).map(function (b) { return b[':db/id']; });
+        return __spreadArray([pageByDbId.get(pageId)], blocks.map(function (b) { return blockByDbId.get(b); }), true);
+    };
     var getParentsUids = function (ps) {
         var _a;
+        // Returning nulls?
+        // TODO: get to the root cause, are they deleted items
         var pageId = ps[0][':db/id'];
         var blocks = ps.slice(1, ps.length).map(function (b) { return b[':db/id']; });
         return __spreadArray([(_a = pageByDbId.get(pageId)) === null || _a === void 0 ? void 0 : _a[':block/uid']], blocks.map(function (b) { var _a; return (_a = blockByDbId.get(b)) === null || _a === void 0 ? void 0 : _a[':block/uid']; }), true);
+    };
+    var getParentsDbIds = function (ps) {
+        // Returning nulls?
+        // TODO: get to the root cause, are they deleted items
+        var pageId = ps[0][':db/id'];
+        var blocks = ps.slice(1, ps.length).map(function (b) { return b[':db/id']; });
+        return __spreadArray([pageId], blocks.map(function (b) { return b[':db/id']; }), true);
     };
     var hasPage = function (b) {
         return pageByDbId.get(b[':block/page'][':db/id']) !== undefined;
     };
     var blocks = (0, itiriri_1["default"])(data.blocks)
         .filter(function (b) { return hasPage(b); })
-        .map(function (b) { return ({
-        uid: b[':block/uid'],
-        parents: getParentsUids(b[':block/parents']),
-        content: b[':block/string'],
-        // toParse: console.log('parsing:', b[':block/string']),
-        structure: (0, src_1.parseToStructure)(b[':block/string']),
-        ast: (0, src_1.parseToAst)(b[':block/string']),
-        heading: b[':block/heading'],
-        order: b[':block/order'],
-        pageUid: pageByDbId.get(b[':block/page'][':db/id'])[':block/uid'],
-        pageTitle: pageByDbId.get(b[':block/page'][':db/id'])[':node/title'],
-        createTime: b[':create/time'],
-        editTime: b[':edit/time']
-    }); })
+        .map(function (b) {
+        var _a, _b, _c;
+        var parents = getParents(b[':block/parents']);
+        var fallbackTime = (_a = parents.map(function (p) { return p === null || p === void 0 ? void 0 : p[':create/time']; }).filter(function (t) { return t; }).reverse()) === null || _a === void 0 ? void 0 : _a[0];
+        return ({
+            uid: b[':block/uid'],
+            parents: parents.map(function (p) { return p === null || p === void 0 ? void 0 : p[':block/uid']; }),
+            parentsDbs: parents.map(function (p) { return p === null || p === void 0 ? void 0 : p[':db/id']; }),
+            content: b[':block/string'],
+            // toParse: console.log('parsing:', b[':block/string']),
+            structure: (0, src_1.parseToStructure)(b[':block/string']),
+            ast: (0, src_1.parseToAst)(b[':block/string']),
+            heading: b[':block/heading'],
+            order: b[':block/order'],
+            pageUid: pageByDbId.get(b[':block/page'][':db/id'])[':block/uid'],
+            pageTitle: pageByDbId.get(b[':block/page'][':db/id'])[':node/title'],
+            createTime: (_b = b[':create/time']) !== null && _b !== void 0 ? _b : fallbackTime,
+            editTime: (_c = b[':edit/time']) !== null && _c !== void 0 ? _c : fallbackTime
+        });
+    })
         .toMap(function (block) { return block.uid; });
     console.log('DONE PARSING');
     var pages = (0, itiriri_1["default"])(data.pages)
@@ -221,38 +241,39 @@ function processRoamData(data, unfiltered) {
         return ({
             uid: p[':block/uid'],
             title: p[':node/title'],
-            children: ((_a = p[':block/children']) !== null && _a !== void 0 ? _a : []).map(function (c) { return blockByDbId.get(c[':db/id'])[':block/uid']; })
+            children: ((_a = p[':block/children']) !== null && _a !== void 0 ? _a : []).map(function (c) { return blockByDbId.get(c[':db/id'])[':block/uid']; }),
+            createTime: p[':create/time'],
+            editTime: p[':edit/time']
         });
     })
         .toMap(function (p) { return p.uid; });
     var pageTitleToUid = (0, itiriri_1["default"])(data.pages).toMap(function (p) { return p[':node/title']; }, function (p) { return p[':block/uid']; });
-    var filteredBlocksUids = !unfiltered
-        ? (0, itiriri_1["default"])(blocks.values())
+    var filteredBlocksUids = unfiltered ?
+        (0, itiriri_1["default"])(blocks.values()).toSet(function (b) { return b.uid; })
+        : (0, itiriri_1["default"])(blocks.values())
             .filter(function (b) { return /^#zexport\b/.test(b.content); })
             .map(function (b) { return b.uid; })
-            .toSet()
-        : (0, itiriri_1["default"])(blocks.values())
-            .map(function (b) { return b.uid; })
             .toSet();
-    var zexportBlocks = (0, itiriri_1["default"])(blocks.values())
-        .filter(function (b) { return b.parents.some(function (puid) { return filteredBlocksUids.has(puid); }); })
-        .toArray();
+    var zexportBlocks = unfiltered ?
+        (0, itiriri_1["default"])(blocks.values()).toArray()
+        : (0, itiriri_1["default"])(blocks.values())
+            .filter(function (b) { return b.parents.some(function (puid) { return filteredBlocksUids.has(puid); }); })
+            .toArray();
     var zexportBlockUids = (0, itiriri_1["default"])(zexportBlocks)
         .map(function (b) { return b.uid; })
         .toSet();
     var zexportPagesUids = (0, itiriri_1["default"])(zexportBlocks)
         .map(function (b) { return b.pageUid; })
         .toSet();
-    var zexportPages = (0, itiriri_1["default"])(zexportPagesUids)
-        .map(function (p) {
-        var page = pages.get(p);
-        // console.log(
-        //   page,
-        //   page.children.filter((c) => zexportBlockUids.has(c))
-        // );
-        return __assign(__assign({}, page), { children: page.children.filter(function (c) { return zexportBlockUids.has(c); }) });
-    })
-        .toArray();
+    // TODO: Fix children
+    var zexportPages = unfiltered ?
+        (0, itiriri_1["default"])(pages.values()).toArray(function (p) { return (__assign(__assign({}, p), { children: [] })); })
+        : (0, itiriri_1["default"])(zexportPagesUids)
+            .map(function (p) {
+            var page = pages.get(p);
+            return __assign(__assign({}, page), { children: page.children.filter(function (c) { return zexportBlockUids.has(c); }) });
+        })
+            .toArray();
     // console.log(zexportBlockUids);
     var bs = (0, itiriri_1["default"])(zexportBlocks)
         // .take(10)
@@ -265,17 +286,30 @@ function processRoamData(data, unfiltered) {
             links: structureToLinks(structure.slice(1), pageTitleToUid),
             parents: x.parents,
             createTime: x.createTime,
-            editTime: x.editTime
+            editTime: x.editTime,
+            type: "block"
             // structure
             // ast: x.ast, AST is multilevel
         };
     })
         .toArray();
     // console.dir(bs, { depth: null });
+    // For a graphistry plot, concat pages and blocks with same fields
+    var nodes = (0, itiriri_1["default"])(bs).concat((0, itiriri_1["default"])(zexportPages).map(function (p) { return ({
+        uid: p.uid,
+        pageTitle: p.title,
+        content: p.title,
+        links: [],
+        parents: [],
+        createTime: p.createTime,
+        editTime: p.editTime,
+        type: 'page'
+    }); })).toArray();
     return {
         pages: zexportPages,
         blocks: zexportBlocks,
-        parsed: bs
+        parsed: bs,
+        nodes: nodes
     };
 }
 function stdinQuit() {
@@ -309,7 +343,9 @@ function structureToLinks(atoms, pageTitleToUid) {
             case 'typed-block-ref':
                 return (_a = a === null || a === void 0 ? void 0 : a[3]) === null || _a === void 0 ? void 0 : _a[2];
             default:
-                return JSON.stringify(a);
+                // Error with this style: ["block-ref",{"from":"(((khBMIidtC))"},"(khBMI
+                // Errow with [failure, ]	
+                return null; // JSON.stringify(a);
         }
-    }).filter(function (i) { return Boolean(i); })) !== null && _a !== void 0 ? _a : []);
+    }).filter(function (i) { return typeof i == "string" && !/failure/.test(i); })) !== null && _a !== void 0 ? _a : []);
 }

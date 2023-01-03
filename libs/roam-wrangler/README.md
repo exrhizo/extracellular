@@ -9,7 +9,7 @@ Currently the data massaging functionality is in `ecm-static-data` and it can be
 - `npm link athens-roam-parser`
 - `npx shadow-cljs watch athens`
 
-- `px tsc --watch tools/executors/roam-capture/impl.ts`
+- `npx tsc --watch tools/executors/roam-capture/impl.ts`
 
 - Go into [zexport in roam](https://roamresearch.com/#/app/collective-intel/page/4F2At-ui4)
 - `nx run ecm-static-data:roam-capture --verbose`

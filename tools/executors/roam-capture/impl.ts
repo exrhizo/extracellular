@@ -172,10 +172,26 @@ function processRoamData(data: RawRoamData, unfiltered = false) {
   const blockByDbId = iti(data.blocks).toMap((b) => b[':db/id']);
   const pageByDbId = iti(data.pages).toMap((p) => p[':db/id']);
 
+  const getParents = (ps: { ':db/id': number }[]) => {
+    const pageId = ps[0][':db/id'];
+    const blocks = ps.slice(1, ps.length).map((b) => b[':db/id']);
+    return [pageByDbId.get(pageId)!, ...blocks.map((b) => blockByDbId.get(b)!)];
+  }
+
   const getParentsUids = (ps: { ':db/id': number }[]) => {
+    // Returning nulls?
+    // TODO: get to the root cause, are they deleted items
     const pageId = ps[0][':db/id'];
     const blocks = ps.slice(1, ps.length).map((b) => b[':db/id']);
     return [pageByDbId.get(pageId)?.[':block/uid']!, ...blocks.map((b) => blockByDbId.get(b)?.[':block/uid']!)];
+  };
+
+  const getParentsDbIds = (ps: { ':db/id': number }[]) => {
+    // Returning nulls?
+    // TODO: get to the root cause, are they deleted items
+    const pageId = ps[0][':db/id'];
+    const blocks = ps.slice(1, ps.length).map((b) => b[':db/id']);
+    return [pageId, ...blocks.map((b) => b[':db/id'])];
   };
 
   const hasPage = (b: RawRoamBlock) => {
@@ -184,20 +200,26 @@ function processRoamData(data: RawRoamData, unfiltered = false) {
 
   const blocks = iti(data.blocks)
     .filter((b) => hasPage(b))
-    .map((b) => ({
-      uid: b[':block/uid'],
-      parents: getParentsUids(b[':block/parents']),
-      content: b[':block/string'],
-      // toParse: console.log('parsing:', b[':block/string']),
-      structure: parseToStructure(b[':block/string']),
-      ast: parseToAst(b[':block/string']),
-      heading: b[':block/heading'],
-      order: b[':block/order'],
-      pageUid: pageByDbId.get(b[':block/page'][':db/id'])![':block/uid'],
-      pageTitle: pageByDbId.get(b[':block/page'][':db/id'])![':node/title'],
-      createTime: b[':create/time'],
-      editTime: b[':edit/time']
-    }))
+    .map((b) => {
+      const parents = getParents(b[':block/parents']);
+      const fallbackTime = parents.map(p => p?.[':create/time']).filter(t => t).reverse()?.[0];
+
+      return ({
+        uid: b[':block/uid'],
+        parents: parents.map(p => p?.[':block/uid']!),
+        parentsDbs: parents.map(p => p?.[':db/id']!),
+        content: b[':block/string'],
+        // toParse: console.log('parsing:', b[':block/string']),
+        structure: parseToStructure(b[':block/string']),
+        ast: parseToAst(b[':block/string']),
+        heading: b[':block/heading'],
+        order: b[':block/order'],
+        pageUid: pageByDbId.get(b[':block/page'][':db/id'])![':block/uid'],
+        pageTitle: pageByDbId.get(b[':block/page'][':db/id'])![':node/title'],
+        createTime: b[':create/time'] ?? fallbackTime,
+        editTime: b[':edit/time'] ?? fallbackTime
+      })
+    })
     .toMap((block) => block.uid);
   console.log('DONE PARSING');
 
@@ -206,23 +228,26 @@ function processRoamData(data: RawRoamData, unfiltered = false) {
       uid: p[':block/uid'],
       title: p[':node/title'],
       children: (p[':block/children'] ?? []).map((c) => blockByDbId.get(c[':db/id'])![':block/uid']),
+      createTime: p[':create/time'],
+      editTime: p[':edit/time']
     }))
     .toMap((p) => p.uid);
   
   const pageTitleToUid = iti(data.pages).toMap((p) => p[':node/title'], (p) => p[':block/uid']);
 
-  const filteredBlocksUids = !unfiltered
-    ? iti(blocks.values())
+  const filteredBlocksUids = unfiltered ?
+      iti(blocks.values()).toSet((b) => b.uid)
+    : iti(blocks.values())
         .filter((b) => /^#zexport\b/.test(b.content))
         .map((b) => b.uid)
-        .toSet()
-    : iti(blocks.values())
-        .map((b) => b.uid)
         .toSet();
+    
 
-  const zexportBlocks = iti(blocks.values())
-    .filter((b) => b.parents.some((puid) => filteredBlocksUids.has(puid)))
-    .toArray();
+  const zexportBlocks = unfiltered ?
+      iti(blocks.values()).toArray()
+    : iti(blocks.values())
+      .filter((b) => b.parents.some((puid) => filteredBlocksUids.has(puid)))
+      .toArray();
 
   const zexportBlockUids = iti(zexportBlocks)
     .map((b) => b.uid)
@@ -232,19 +257,18 @@ function processRoamData(data: RawRoamData, unfiltered = false) {
     .map((b) => b.pageUid)
     .toSet();
 
-  const zexportPages = iti(zexportPagesUids)
-    .map((p) => {
-      const page = pages.get(p)!;
-      // console.log(
-      //   page,
-      //   page.children.filter((c) => zexportBlockUids.has(c))
-      // );
-      return {
-        ...page,
-        children: page.children.filter((c) => zexportBlockUids.has(c)),
-      };
-    })
-    .toArray();
+  // TODO: Fix children
+  const zexportPages = unfiltered ?
+      iti(pages.values()).toArray((p) => ({...p, children: []}))
+    : iti(zexportPagesUids)
+      .map((p) => {
+        const page = pages.get(p)!;
+        return {
+          ...page,
+          children: page.children.filter((c) => zexportBlockUids.has(c)),
+        };
+      })
+      .toArray();
 
   // console.log(zexportBlockUids);
 
@@ -259,7 +283,8 @@ function processRoamData(data: RawRoamData, unfiltered = false) {
         links: structureToLinks(structure.slice(1), pageTitleToUid),
         parents: x.parents,
         createTime: x.createTime,
-        editTime: x.editTime
+        editTime: x.editTime,
+        type: "block"
         // structure
         // ast: x.ast, AST is multilevel
       };
@@ -268,10 +293,23 @@ function processRoamData(data: RawRoamData, unfiltered = false) {
 
   // console.dir(bs, { depth: null });
 
+  // For a graphistry plot, concat pages and blocks with same fields
+  const nodes = iti(bs).concat(iti(zexportPages).map((p) => ({
+    uid: p.uid,
+    pageTitle: p.title,
+    content: p.title,
+    links: [],
+    parents: [],
+    createTime: p.createTime,
+    editTime: p.editTime,
+    type: 'page'
+  }))).toArray()
+
   return {
     pages: zexportPages,
     blocks: zexportBlocks,
     parsed: bs,
+    nodes 
   };
 }
 
@@ -301,7 +339,9 @@ function structureToLinks(atoms: AthensParsedStructure, pageTitleToUid: Map<stri
       case 'typed-block-ref':
         return a?.[3]?.[2];
       default:
-        return JSON.stringify(a);
+        // Error with this style: ["block-ref",{"from":"(((khBMIidtC))"},"(khBMI
+        // Errow with [failure, ]	
+        return null; // JSON.stringify(a);
     }
-  }).filter(i => Boolean(i)) ?? []) as string[];
+  }).filter(i => typeof i == "string" && !/failure/.test(i)) ?? []) as string[];
 }
