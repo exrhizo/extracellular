@@ -1,5 +1,13 @@
 # Extracellular Monorepo
 
+### Getting Started
+
+- Pull the obsidian CMS into `matrix`: `git submodule init`
+
+### Obsidian as a CMS
+
+See [matrix/README.md](matrix/README.md)
+
 # [Cross at a Ford](http://crossataford.com) founded by @exrhizo
 
 Run with
