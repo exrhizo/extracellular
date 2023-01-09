@@ -37,6 +37,14 @@
         "output": "libs/ecm-static-data/src/roam",
         "unfiltered": true
       }
+    },
+    "load-matrix": {
+      "executor": "./tools/executors/load-matrix:load-matrix",
+      "options": {
+        "output": "libs/ecm-static-data/src/roam",
+        "unfiltered": true,
+        "path": "matrix"
+      }
     }
   },
   "tags": []

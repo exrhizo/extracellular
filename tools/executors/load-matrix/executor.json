@@ -1,0 +1,9 @@
+{
+    "executors": {
+        "load-matrix": {
+            "implementation": "./impl",
+            "schema": "./schema.json",
+            "description": "Loads the obsidian matrix."
+        }
+    }
+}
