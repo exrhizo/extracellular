@@ -75,8 +75,8 @@ export function Index() {
 
   return (
     <div>
-      <h2>Pipe My DAO</h2>
-      <Button>Use the pipe</Button>
+      <h2>ECM</h2>
+      <Button>This is a stitches button</Button>
     </div>
   );
 }

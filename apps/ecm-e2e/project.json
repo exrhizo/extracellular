@@ -1,17 +1,18 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/crossataford-e2e/src",
+  "sourceRoot": "apps/ecm-e2e/src",
   "projectType": "application",
   "targets": {
     "e2e": {
       "executor": "@nrwl/cypress:cypress",
       "options": {
-        "cypressConfig": "apps/crossataford-e2e/cypress.json",
-        "devServerTarget": "crossataford:serve:development"
+        "cypressConfig": "apps/ecm-e2e/cypress.config.ts",
+        "devServerTarget": "ecm:serve:development",
+        "testingType": "e2e"
       },
       "configurations": {
         "production": {
-          "devServerTarget": "crossataford:serve:production"
+          "devServerTarget": "ecm:serve:production"
         }
       }
     },
@@ -19,10 +20,10 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/crossataford-e2e/**/*.{js,ts}"]
+        "lintFilePatterns": ["apps/ecm-e2e/**/*.{js,ts}"]
       }
     }
   },
   "tags": [],
-  "implicitDependencies": ["crossataford"]
+  "implicitDependencies": ["ecm"]
 }

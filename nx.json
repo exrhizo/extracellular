@@ -33,7 +33,7 @@
       }
     }
   },
-  "defaultProject": "pipemydao",
+  "defaultProject": "ecm",
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"]

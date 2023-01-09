@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/pipemydao",
+  "sourceRoot": "apps/ecm",
   "projectType": "application",
   "targets": {
     "build": {
@@ -8,12 +8,12 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "root": "apps/pipemydao",
-        "outputPath": "dist/apps/pipemydao"
+        "root": "apps/ecm",
+        "outputPath": "dist/apps/ecm"
       },
       "configurations": {
         "development": {
-          "outputPath": "tmp/apps/pipemydao"
+          "outputPath": "tmp/apps/ecm"
         },
         "production": {}
       }
@@ -22,16 +22,16 @@
       "executor": "@nrwl/next:server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "pipemydao:build",
+        "buildTarget": "ecm:build",
         "dev": true
       },
       "configurations": {
         "development": {
-          "buildTarget": "pipemydao:build:development",
+          "buildTarget": "ecm:build:development",
           "dev": true
         },
         "production": {
-          "buildTarget": "pipemydao:build:production",
+          "buildTarget": "ecm:build:production",
           "dev": false
         }
       }
@@ -39,14 +39,14 @@
     "export": {
       "executor": "@nrwl/next:export",
       "options": {
-        "buildTarget": "pipemydao:build:production"
+        "buildTarget": "ecm:build:production"
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/pipemydao"],
+      "outputs": ["coverage/apps/ecm"],
       "options": {
-        "jestConfig": "apps/pipemydao/jest.config.ts",
+        "jestConfig": "apps/ecm/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -54,7 +54,7 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/pipemydao/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["apps/ecm/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "arrow": {

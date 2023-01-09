@@ -2,10 +2,8 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
-    "crossataford": "apps/crossataford",
-    "crossataford-e2e": "apps/crossataford-e2e",
     "ecm-static-data": "libs/ecm-static-data",
-    "pipemydao": "apps/pipemydao",
+    "ecm": "apps/ecm",
     "roam-wrangler": "libs/roam-wrangler"
   }
 }
