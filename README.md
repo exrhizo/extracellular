@@ -2,7 +2,7 @@
 
 ### Getting Started
 
-- Pull the obsidian CMS into `matrix`: `git submodule init`
+- Pull the obsidian CMS into `matrix`: `git submodule init` `git submodule update`
 
 ### Obsidian as a CMS
 
