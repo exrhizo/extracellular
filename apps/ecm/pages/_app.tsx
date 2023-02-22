@@ -5,7 +5,7 @@ import './globals.css';
 
 function App({ Component, pageProps }: AppProps) {
   return (
-    <>    
+    <>
       <Head>
         <title>ECM</title>
       </Head>
