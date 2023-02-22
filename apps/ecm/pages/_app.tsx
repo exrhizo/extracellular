@@ -4,11 +4,8 @@ import Head from 'next/head';
 import './globals.css';
 
 function App({ Component, pageProps }: AppProps) {
-  // console.log({vault});
-
   return (
-    <>
-    
+    <>    
       <Head>
         <title>ECM</title>
       </Head>

@@ -9,4 +9,10 @@
     h2 {
         @apply text-xl;
     }
+    p {
+        @apply pt-2;
+    }
+    a {
+        text-decoration: underline;
+    }
 }
