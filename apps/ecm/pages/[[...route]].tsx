@@ -1,5 +1,3 @@
-// import { useRouter } from 'next/router';
-
 import ReactMarkdown from 'react-markdown';
 
 export const CURRENT_SITE_NAME = 'Exrhizo';
@@ -42,7 +40,6 @@ function parseObsidianLink(link: string, fileKeyToPathMap: Record<string, string
 // Route. e.g. [] or ["Human_Factor"], ["Ford_Crossing", "Home"]   <-- What next.js uses for routing
 // Path e.g. '/', Human_Factor, Ford_Crossing/Home   <-- what you see in the url bar, and what we use for hrefs/links
 // fileKey e.g. Exrhizo/Home, Exrhizo/Human_Factor, Ford_Crossing/Home 
-
 export function PageWrapper({
     vaultFiles,
     route,
@@ -54,12 +51,12 @@ export function PageWrapper({
     pathToFileKeyMap: Record<string, string>;
     fileKeyToPathMap: Record<string, string>;
 }) {
-    // TODO: add title?
+    // TODO: add title to page?
 
     const siteConfig = getSiteConfig(vaultFiles, CURRENT_SITE_NAME);
     const navLinks = getNavLinks(siteConfig.content);
 
-    // TODO: MAYBE TOO SLOW FOR RENDER?
+    // TODO: MAYBE TOO SLOW FOR RENDER? On second thought, I think fine.
     const parsedNavLinks = navLinks ? navLinks.map((link) => {
         return parseObsidianLink(link, fileKeyToPathMap);
     }) : undefined;
@@ -67,7 +64,7 @@ export function PageWrapper({
     console.log({ navLinks });
     console.log({ parsedNavLinks });
 
-    // Example. Possibly useful for testing. Likely delete.
+    // Example. Possibly useful to leave around for testing. Likely delete.
     // const parsedNavLinks = [
     //     { path: '/', name: 'Home' },
     //     { path: 'Human_Factor', name: 'The Human Factor' },
