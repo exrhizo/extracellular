@@ -4,6 +4,7 @@
 /dist
 /tmp
 /out-tsc
+/apps/ecm/public
 
 # dependencies
 node_modules
